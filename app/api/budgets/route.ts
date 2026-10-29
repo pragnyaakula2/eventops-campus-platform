@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')?.trim();
 
     const conditions: string[] = [];
-    const params: unknown[] = [];
+    const params: (string | number | boolean | Date | null)[] = [];
 
     if (search) {
       params.push(`%${search}%`);
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     );
 
     const expenseConditions: string[] = [];
-    const expenseParams: unknown[] = [];
+    const expenseParams: (string | number | boolean | Date | null)[] = [];
 
     if (search) {
       expenseParams.push(`%${search}%`);

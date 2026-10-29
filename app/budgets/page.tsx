@@ -88,7 +88,10 @@ export default function BudgetsPage() {
   }
 
   useEffect(() => {
-    void loadBudgets();
+    const timer = window.setTimeout(() => {
+      void loadBudgets();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const filteredBudgets = useMemo(() => {

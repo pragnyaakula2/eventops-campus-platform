@@ -21,7 +21,8 @@ export async function POST(
     const outcome = await registerForEvent(eventId, student);
 
     return NextResponse.json({ success: true, outcome });
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     const status = err.status || 400;
     return NextResponse.json(
       { success: false, error: err.message || 'Registration failed' },
@@ -49,7 +50,8 @@ export async function DELETE(
     const outcome = await cancelRegistration(eventId, student);
 
     return NextResponse.json({ success: true, outcome });
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     const status = err.status || 400;
     return NextResponse.json(
       { success: false, error: err.message || 'Cancellation failed' },

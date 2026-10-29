@@ -47,7 +47,7 @@ export async function POST(
     const organization_rating = body.organization_rating ? Math.min(5, Math.max(1, Number(body.organization_rating))) : rating;
     const venue_rating = body.venue_rating ? Math.min(5, Math.max(1, Number(body.venue_rating))) : rating;
     const comments = body.comments ? String(body.comments).slice(0, 1000) : null;
-    const tags = Array.isArray(body.tags) ? body.tags.map((t: any) => String(t).trim()).filter(Boolean) : [];
+    const tags = Array.isArray(body.tags) ? body.tags.map((t: unknown) => String(t).trim()).filter(Boolean) : [];
     const would_recommend = body.would_recommend !== false;
 
     const db = await getDb();
@@ -68,8 +68,9 @@ export async function POST(
 
     try {
       await feedbackCol.insertOne(feedbackDoc);
-    } catch (dbErr: any) {
-      if (dbErr.code === 11000) {
+    } catch (caught: unknown) {
+      const dbErr = caught as Error & { code?: number | string };
+      if (Number(dbErr.code) === 11000) {
         return NextResponse.json(
           { success: false, error: 'You have already submitted feedback for this event.' },
           { status: 409 }
@@ -94,7 +95,8 @@ export async function POST(
       message: 'Feedback submitted successfully! Thank you.',
       feedback: feedbackDoc,
     });
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     const status = err.status || 500;
     return NextResponse.json(
       { success: false, error: err.message || 'Failed to submit feedback' },

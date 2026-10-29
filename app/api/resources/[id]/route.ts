@@ -101,7 +101,8 @@ export async function PATCH(
       success: true,
       resource: updated.rows[0],
     });
-  } catch (error: any) {
+  } catch (caught: unknown) {
+    const error = caught as Error & { status?: number; code?: string };
     try {
       await client.query("ROLLBACK");
     } catch {}

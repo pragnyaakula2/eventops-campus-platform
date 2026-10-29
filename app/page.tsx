@@ -139,11 +139,14 @@ export default function Home() {
     }
 
     // Read the current time in the browser, not during prerendering.
-    setCurrentTime(Date.now());
-    loadEvents();
+    const timer = window.setTimeout(() => {
+      setCurrentTime(Date.now());
+      void loadEvents();
+    }, 0);
 
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, []);
 

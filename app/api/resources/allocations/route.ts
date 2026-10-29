@@ -69,7 +69,8 @@ export async function POST(request: NextRequest) {
       { success: true, allocation: result.rows[0] },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (caught: unknown) {
+    const error = caught as Error & { status?: number; code?: string };
     console.error("POST resource allocation:", error);
 
     if (error.code === "23505") {
@@ -149,7 +150,8 @@ export async function PATCH(request: NextRequest) {
       success: true,
       allocation: result.rows[0],
     });
-  } catch (error: any) {
+  } catch (caught: unknown) {
+    const error = caught as Error & { status?: number; code?: string };
     console.error("PATCH resource allocation:", error);
     return NextResponse.json(
       { success: false, error: "Failed to update allocation status." },

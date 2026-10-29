@@ -4,8 +4,13 @@
  * Runs 100% locally and offline without external API keys or network latency.
  */
 
+type EmbeddingExtractor = (
+  text: string,
+  options: { pooling: string; normalize: boolean }
+) => Promise<{ data: Float32Array | number[] }>;
+
 // Cache pipeline promise as a singleton to avoid re-loading weights
-let pipelinePromise: Promise<any> | null = null;
+let pipelinePromise: Promise<EmbeddingExtractor> | null = null;
 
 async function getExtractor() {
   if (!pipelinePromise) {
@@ -13,7 +18,7 @@ async function getExtractor() {
     const { pipeline } = await import('@xenova/transformers');
     pipelinePromise = pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
       quantized: true,
-    });
+    }) as unknown as Promise<EmbeddingExtractor>;
   }
   return pipelinePromise;
 }

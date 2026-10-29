@@ -165,7 +165,7 @@ export async function logSystemAudit(params: {
   actorId: number;
   actorEmail: string;
   actorRole: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }) {
   const db = await getDb();
   const collection = db.collection('system_audit_logs');

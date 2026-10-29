@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     return NextResponse.json(
       { success: false, error: err.message || 'Authentication failed' },
       { status: 401 }

@@ -1,5 +1,7 @@
+"use client";
 
-'use client';
+import Link from "next/link";
+
 
 import { useCallback, useEffect, useState } from 'react';
 
@@ -65,7 +67,10 @@ export default function ApprovalsPage() {
   }, []);
 
   useEffect(() => {
-    void loadApprovals();
+    const timer = window.setTimeout(() => {
+      void loadApprovals();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadApprovals]);
 
   async function decide(approval: Approval, decision: 'Approved' | 'Rejected') {
@@ -143,12 +148,12 @@ export default function ApprovalsPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <a
+            <Link
               href="/"
               className="mb-3 inline-flex text-sm font-medium text-slate-500 hover:text-slate-900"
             >
               ← Back to dashboard
-            </a>
+            </Link>
             <h1 className="text-3xl font-bold tracking-tight">Approvals</h1>
             <p className="mt-2 text-sm text-slate-500">
               Review event requests through Faculty, HOD, and Admin approval.

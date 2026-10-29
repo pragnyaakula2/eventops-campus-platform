@@ -20,7 +20,8 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, event });
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     console.error('Error fetching event details:', err);
     return NextResponse.json(
       { success: false, error: err.message || 'Failed to fetch event details' },

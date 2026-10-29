@@ -1,5 +1,7 @@
-
 "use client";
+
+import Link from "next/link";
+
 
 import { useEffect, useState } from "react";
 
@@ -56,12 +58,12 @@ export default function RegistrationsPage() {
   return (
     <main className="min-h-screen bg-slate-50 p-6 md:p-10">
       <div className="mx-auto max-w-5xl">
-        <a
+        <Link
           href="/"
           className="text-sm font-medium text-indigo-600 hover:underline"
         >
           ← Back to dashboard
-        </a>
+        </Link>
 
         <header className="mb-8 mt-5">
           <p className="text-sm text-slate-500">
@@ -103,12 +105,12 @@ export default function RegistrationsPage() {
             <p className="mt-2 text-slate-600">
               Your account does not have any registrations to display.
             </p>
-            <a
+            <Link
               href="/#campus-events"
               className="mt-5 inline-block rounded-lg bg-indigo-600 px-5 py-3 text-white"
             >
               Browse events
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

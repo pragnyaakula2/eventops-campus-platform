@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
       .toArray();
 
     return NextResponse.json({ success: true, count: logs.length, logs });
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     const status = err.status || 500;
     return NextResponse.json(
       { success: false, error: err.message || 'Failed to fetch audit logs' },

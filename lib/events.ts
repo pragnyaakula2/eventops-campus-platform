@@ -78,7 +78,7 @@ export async function listEvents(options: ListEventsOptions = {}): Promise<Event
 
   // 2. Standard relational filter branch
   const conditions: string[] = [];
-  const params: any[] = [];
+  const params: (string | number)[] = [];
   let paramIdx = 1;
 
   if (status) {
@@ -109,11 +109,23 @@ export async function listEvents(options: ListEventsOptions = {}): Promise<Event
     params
   );
 
-  return res.rows.map((row) => ({
-    ...row,
-    occupancy_percentage: Number(row.occupancy_percentage),
-    is_full: Boolean(row.is_full),
-  }));
+  return res.rows.map((row): EventListItem => ({
+  event_id: Number(row.event_id),
+  event_title: String(row.event_title),
+  event_status: String(row.event_status),
+  start_time: String(row.start_time),
+  end_time: String(row.end_time),
+  club_name: row.club_name ?? null,
+  category_name: row.category_name ?? null,
+  organizer_name: String(row.organizer_name),
+  venue_names: String(row.venue_names),
+  capacity: Number(row.capacity),
+  confirmed_registrations: Number(row.confirmed_registrations),
+  waitlist_count: Number(row.waitlist_count),
+  seats_remaining: Number(row.seats_remaining),
+  occupancy_percentage: Number(row.occupancy_percentage),
+  is_full: Boolean(row.is_full),
+}));
 }
 
 /**

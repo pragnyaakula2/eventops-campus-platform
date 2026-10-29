@@ -1,5 +1,7 @@
-
 "use client";
+
+import Link from "next/link";
+
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -158,7 +160,10 @@ export default function ResourcesPage() {
   }, []);
 
   useEffect(() => {
-    void loadData();
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadData]);
 
   const stats = useMemo(() => {
@@ -374,9 +379,9 @@ export default function ResourcesPage() {
         <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="mb-2 text-sm text-slate-500">
-              <a href="/" className="hover:text-indigo-600">
+              <Link href="/" className="hover:text-indigo-600">
                 Overview
-              </a>{" "}
+              </Link>{" "}
               / Resources
             </p>
             <p className="text-sm font-medium text-indigo-600">

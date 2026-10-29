@@ -206,7 +206,7 @@ export function assertUserHasRole(
 ): UserSession {
   if (!session) {
     const error = new Error('Authentication required.');
-    (error as any).status = 401;
+    (error as Error & { status?: number }).status = 401;
     throw error;
   }
 
@@ -214,7 +214,7 @@ export function assertUserHasRole(
     const error = new Error(
       `Access denied: requires one of [${allowedRoles.join(', ')}], user has role "${session.roleName}".`
     );
-    (error as any).status = 403;
+    (error as Error & { status?: number }).status = 403;
     throw error;
   }
 

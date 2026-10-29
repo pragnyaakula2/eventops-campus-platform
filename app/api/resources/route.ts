@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
       { success: true, resource: result.rows[0] },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (caught: unknown) {
+    const error = caught as Error & { status?: number; code?: string };
     if (error.code === "23505") {
       return NextResponse.json(
         { success: false, error: "A resource with this name already exists." },

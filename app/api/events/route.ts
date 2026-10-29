@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
     const events = await listEvents({ search, category_id, club_id, status, limit });
 
     return NextResponse.json({ success: true, count: events.length, events });
-  } catch (err: any) {
+  } catch (caught: unknown) {
+    const err = caught as Error & { status?: number; code?: string };
     console.error('Error fetching events:', err);
     return NextResponse.json(
       { success: false, error: err.message || 'Failed to list events' },
