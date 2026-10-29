@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EventOps: Campus Event Management System
+
+EventOps is a full-stack web application designed to streamline campus event management. It brings event scheduling, venue management, resource allocation, budgeting, student registrations, and multi-stage approvals into one platform.
+
+## Features
+
+- **Role-based access control:** Separate workflows for Admin, Faculty, HOD, Organizer, and Student roles.
+- **Event management:** View and manage campus events.
+- **Multi-stage approvals:** Faculty, HOD, and Admin approval workflow.
+- **Venue management:** Manage campus venues.
+- **Resource allocation:** Organize and track event resources.
+- **Budget management:** Track event budgets and expenses.
+- **Student registrations:** Support event registration workflows.
+- **Audit logging:** Record important system and approval actions.
+
+## Tech Stack
+
+- **Frontend:** Next.js, React, TypeScript
+- **Backend:** Next.js API routes
+- **Database:** PostgreSQL
+- **Audit logging:** MongoDB
+- **Styling:** CSS
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+Install the following before running the application:
+
+- Node.js and npm
+- PostgreSQL
+- MongoDB, if audit logging is enabled
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/pragnyaakula2/eventops-campus-platform.git
+cd eventops-campus-platform
+npm install
+```
+
+### Environment Configuration
+
+Create a `.env.local` file in the project root and configure the environment variables required by the application.
+
+Use the variable names expected by the database and authentication code. Never commit credentials or secret keys to GitHub.
+
+### Database Setup
+
+1. Create the required PostgreSQL database.
+2. Apply the project's database schema and any required seed data.
+3. Configure the PostgreSQL connection string.
+4. Configure MongoDB if you intend to use audit logging.
+
+### Run Locally
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the production build to verify the application:
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+eventops-campus-platform/
+├── app/
+│   ├── api/          # Backend API routes
+│   ├── approvals/    # Approval workflow
+│   ├── budgets/      # Budget management
+│   ├── login/        # Authentication interface
+│   ├── resources/    # Resource management
+│   ├── schedule/     # Event scheduling
+│   ├── student/      # Student workflows
+│   └── venues/       # Venue management
+├── lib/              # Database, authentication and utilities
+├── public/           # Static assets
+├── package.json
+└── README.md
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Testing
 
-## Deploy on Vercel
+The production build has been run successfully in the development environment. Authentication and the multi-stage approval workflow have also been tested.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Future Improvements
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Automated CI checks with GitHub Actions
+- Deployment with secure environment configuration
+- Expanded automated tests
+- Improved reporting and analytics
+
+## License
+
+No license has been specified yet.
+
