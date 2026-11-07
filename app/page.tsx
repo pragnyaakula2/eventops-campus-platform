@@ -219,6 +219,22 @@ export default function Home() {
     });
   }, [events, search, statusFilter]);
 
+  async function handleLogout() {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      window.location.assign("/login");
+    } catch {
+      alert("Unable to log out. Please try again.");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#f6f7fb] text-slate-900 md:flex">
       <aside className="flex w-full flex-col bg-[#111827] p-5 text-white md:min-h-screen md:w-64 md:shrink-0">
@@ -259,6 +275,15 @@ export default function Home() {
             Your campus activities in one workspace.
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
+        >
+          <span className="w-5 text-center">↪</span>
+          Logout
+        </button>
       </aside>
 
       <section className="min-w-0 flex-1 p-5 sm:p-8 lg:p-10">
