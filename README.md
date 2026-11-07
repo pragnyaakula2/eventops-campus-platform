@@ -6,8 +6,6 @@ The system uses role-based access control to support different campus stakeholde
 
 **Live Application:** https://eventops-campus-platform.vercel.app
 
-**GitHub Repository:** https://github.com/pragnyaakula2/eventops-campus-platform
-
 ---
 
 ## Features
@@ -276,24 +274,10 @@ The following development and deployment checks have been performed:
 
 ---
 
-## Future Improvements
-
-- Expand automated testing and improve test coverage.
-- Enhance reporting and analytics dashboards.
-- Improve application performance and scalability.
-- Strengthen security and session management.
-- Introduce additional event management and notification capabilities.
-
----
-
-## License
-
-No license has been specified for this project yet.
-
----
-
 ## Author
 
 **Akula Pragnya**
 
-GitHub: https://github.com/pragnyaakula2
+**Bhoomika Patil**
+
+
