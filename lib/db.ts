@@ -1,6 +1,7 @@
 /**
  * EventOps PostgreSQL Connection Pool Singleton
  * Manages connection pooling for Next.js App Router (Node.js runtime).
+ * Prepared for local development and cloud hosting (Neon / Serverless).
  */
 import pg from 'pg';
 import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
@@ -14,13 +15,20 @@ declare global {
 const connectionString =
   process.env.DATABASE_URL || 'postgresql://localhost:5432/eventops';
 
+// Detect whether connecting to a local socket/host or a remote cloud database (Neon)
+const isLocal =
+  connectionString.includes('localhost') ||
+  connectionString.includes('127.0.0.1') ||
+  connectionString.includes('/tmp');
+
 export const pool: pg.Pool =
   global._pgPool ||
   new Pool({
     connectionString,
-    max: 10,
+    ssl: isLocal ? false : { rejectUnauthorized: false },
+    max: process.env.NODE_ENV === 'production' ? 5 : 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
   });
 
 if (process.env.NODE_ENV !== 'production') {

@@ -27,7 +27,8 @@ if (process.env.NODE_ENV === 'development') {
 
 export async function getDb(): Promise<Db> {
   const connectedClient = await clientPromise;
-  return connectedClient.db('eventops');
+  const dbName = process.env.MONGODB_DB_NAME || 'eventops';
+  return connectedClient.db(dbName);
 }
 
 export default clientPromise;
