@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type EventItem = {
   event_id: number;
@@ -27,7 +28,6 @@ type EventsResponse = {
   error?: string;
 };
 
-
 const navigation = [
   { icon: "▦", label: "Overview", href: "/" },
   { icon: "◉", label: "Events", href: "/#campus-events" },
@@ -41,16 +41,16 @@ const navigation = [
   { icon: "◇", label: "Resources", href: "/resources" },
   { icon: "⇄", label: "Budgets", href: "/budgets" },
   { icon: "✓", label: "Approvals", href: "/approvals" },
-  
 ];
-
 
 function formatDate(value?: string) {
   if (!value) return "Date unavailable";
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "Date unavailable";
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
 
   return new Intl.DateTimeFormat("en-IN", {
     day: "2-digit",
@@ -83,73 +83,101 @@ function getVenueNames(value?: string[] | string | null) {
 }
 
 export default function Home() {
-  
+  const router = useRouter();
+
+  const [authChecked, setAuthChecked] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentTime, setCurrentTime] = useState<number | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
+  // Authentication check and event loading
   useEffect(() => {
     let active = true;
 
-    async function loadEvents() {
+    async function initializeDashboard() {
       try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch("/api/events", {
+        // First, verify the user's session.
+        const authResponse = await fetch("/api/auth/me", {
           cache: "no-store",
+          credentials: "same-origin",
         });
 
-        const rawData = await response.json();
+        const authData = await authResponse.json();
 
-        // Support either a normal JSON object or an array containing one.
-        const data: EventsResponse = Array.isArray(rawData)
-          ? rawData[0]
-          : rawData;
+        if (!active) return;
 
-        if (
-          !response.ok ||
-          !data?.success ||
-          !Array.isArray(data.events)
-        ) {
-          throw new Error(
-            data?.error || "Unable to load events from the API."
-          );
+        // Redirect to login if there is no valid session.
+        if (!authResponse.ok || !authData.authenticated) {
+          router.replace("/login");
+          return;
         }
 
-        if (active) {
-          setEvents(data.events);
+        // Authentication succeeded.
+        setAuthChecked(true);
+        setCurrentTime(Date.now());
+
+        // Only load dashboard data after authentication.
+        try {
+          setLoading(true);
+          setError("");
+
+          const response = await fetch("/api/events", {
+            cache: "no-store",
+            credentials: "same-origin",
+          });
+
+          const rawData = await response.json();
+
+          const data: EventsResponse = Array.isArray(rawData)
+            ? rawData[0]
+            : rawData;
+
+          if (
+            !response.ok ||
+            !data?.success ||
+            !Array.isArray(data.events)
+          ) {
+            throw new Error(
+              data?.error || "Unable to load events from the API."
+            );
+          }
+
+          if (active) {
+            setEvents(data.events);
+          }
+        } catch (err) {
+          if (active) {
+            setError(
+              err instanceof Error
+                ? err.message
+                : "Something went wrong while loading events."
+            );
+          }
+        } finally {
+          if (active) {
+            setLoading(false);
+          }
         }
-      } catch (err) {
+      } catch {
+        // If session verification itself fails, redirect to login.
         if (active) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Something went wrong while loading events."
-          );
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
+          router.replace("/login");
         }
       }
     }
 
-    // Read the current time in the browser, not during prerendering.
-    const timer = window.setTimeout(() => {
-      setCurrentTime(Date.now());
-      void loadEvents();
-    }, 0);
+    void initializeDashboard();
 
     return () => {
       active = false;
-      window.clearTimeout(timer);
     };
-  }, []);
+  }, [router]);
 
+  // Dashboard statistics
   const stats = useMemo(() => {
     const upcoming = events.filter((event) => {
       const start = new Date(event.start_time).getTime();
@@ -200,6 +228,7 @@ export default function Home() {
     ];
   }, [events, currentTime]);
 
+  // Search and filter events
   const filteredEvents = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -219,20 +248,42 @@ export default function Home() {
     });
   }, [events, search, statusFilter]);
 
+  // Logout
   async function handleLogout() {
+    if (loggingOut) return;
+
     try {
+      setLoggingOut(true);
+
       const response = await fetch("/api/auth/logout", {
         method: "POST",
+        credentials: "same-origin",
       });
 
       if (!response.ok) {
         throw new Error("Logout failed");
       }
 
-      window.location.assign("/login");
+      router.replace("/login");
+      router.refresh();
     } catch {
+      setLoggingOut(false);
       alert("Unable to log out. Please try again.");
     }
+  }
+
+  // Do not display the dashboard before authentication is verified.
+  if (!authChecked) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#f6f7fb]">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+          <p className="text-sm font-medium text-slate-600">
+            Verifying your session...
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -242,6 +293,7 @@ export default function Home() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500 text-xl font-bold">
             E
           </div>
+
           <div>
             <h1 className="text-lg font-bold tracking-tight">EventOps</h1>
             <p className="text-xs text-slate-400">Campus management</p>
@@ -279,20 +331,25 @@ export default function Home() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
+          disabled={loggingOut}
+          className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-300 transition hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="w-5 text-center">↪</span>
-          Logout
+          {loggingOut ? "Logging out..." : "Logout"}
         </button>
       </aside>
 
       <section className="min-w-0 flex-1 p-5 sm:p-8 lg:p-10">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="mb-1 text-sm text-slate-500">Campus / Overview</p>
+            <p className="mb-1 text-sm text-slate-500">
+              Campus / Overview
+            </p>
+
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Event operations
             </h2>
+
             <p className="mt-2 text-sm text-slate-500">
               Your campus activity at a glance.
             </p>
@@ -302,10 +359,13 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700">
               E
             </div>
+
             <div>
               <p className="text-sm font-semibold">EventOps</p>
               <p className="text-xs text-slate-500">
-                {loading ? "Loading events..." : `${events.length} events loaded`}
+                {loading
+                  ? "Loading events..."
+                  : `${events.length} events loaded`}
               </p>
             </div>
           </div>
@@ -317,6 +377,7 @@ export default function Home() {
             className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
           >
             <span>Unable to load live event data: {error}</span>
+
             <button
               onClick={() => window.location.reload()}
               className="rounded-lg border border-red-300 px-3 py-2 font-semibold hover:bg-red-100"
@@ -336,12 +397,19 @@ export default function Home() {
                 <p className="text-sm font-medium text-slate-500">
                   {stat.label}
                 </p>
-                <span className={`h-2.5 w-2.5 rounded-full ${stat.dot}`} />
+
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${stat.dot}`}
+                />
               </div>
+
               <p className="text-3xl font-bold tracking-tight">
                 {loading ? "—" : stat.value}
               </p>
-              <p className="mt-2 text-xs text-slate-500">{stat.note}</p>
+
+              <p className="mt-2 text-xs text-slate-500">
+                {stat.note}
+              </p>
             </article>
           ))}
         </div>
@@ -358,8 +426,11 @@ export default function Home() {
                   Live data from your EventOps API
                 </p>
               </div>
+
               <span className="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700">
-                {loading ? "Loading..." : `${filteredEvents.length} results`}
+                {loading
+                  ? "Loading..."
+                  : `${filteredEvents.length} results`}
               </span>
             </div>
 
@@ -393,7 +464,9 @@ export default function Home() {
                   <tr>
                     <th className="px-5 py-3 font-semibold">Event</th>
                     <th className="px-5 py-3 font-semibold">Date</th>
-                    <th className="px-5 py-3 font-semibold">Registrations</th>
+                    <th className="px-5 py-3 font-semibold">
+                      Registrations
+                    </th>
                     <th className="px-5 py-3 font-semibold">Status</th>
                   </tr>
                 </thead>
@@ -429,9 +502,11 @@ export default function Home() {
                           <p className="min-w-40 font-semibold">
                             {event.event_title}
                           </p>
+
                           <p className="mt-1 text-xs text-slate-500">
                             {event.category_name || "Uncategorized"}
                           </p>
+
                           <p className="mt-1 text-xs text-slate-400">
                             {getVenueNames(event.venue_names)}
                           </p>
@@ -443,7 +518,8 @@ export default function Home() {
 
                         <td className="whitespace-nowrap px-5 py-4 text-slate-600">
                           {Number(event.confirmed_registrations || 0)}
-                          {event.capacity != null && ` / ${event.capacity}`}
+                          {event.capacity != null &&
+                            ` / ${event.capacity}`}
                         </td>
 
                         <td className="px-5 py-4">
@@ -465,6 +541,7 @@ export default function Home() {
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
             <h3 className="font-bold">Quick actions</h3>
+
             <p className="mt-1 text-sm text-slate-500">
               Explore the available event data.
             </p>
@@ -487,10 +564,12 @@ export default function Home() {
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-lg text-indigo-700">
                   ⌕
                 </span>
+
                 <span>
                   <span className="block text-sm font-semibold">
                     Find an event
                   </span>
+
                   <span className="mt-1 block text-xs text-slate-500">
                     Search titles, categories and venues
                   </span>
@@ -504,10 +583,12 @@ export default function Home() {
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-lg">
                   ◷
                 </span>
+
                 <span>
                   <span className="block text-sm font-semibold">
                     Browse campus events
                   </span>
+
                   <span className="mt-1 block text-xs text-slate-500">
                     View dates, venues and registration counts
                   </span>
@@ -515,11 +596,14 @@ export default function Home() {
               </a>
 
               <div className="rounded-xl border border-dashed border-slate-200 p-4">
-                <p className="text-sm font-semibold">More operations</p>
+                <p className="text-sm font-semibold">
+                  More operations
+                </p>
+
                 <p className="mt-1 text-xs leading-5 text-slate-500">
                   Event creation, approvals, venue booking and budget
-                  management will be connected to their authorized workflows
-                  in the next implementation stage.
+                  management will be connected to their authorized
+                  workflows in the next implementation stage.
                 </p>
               </div>
             </div>
